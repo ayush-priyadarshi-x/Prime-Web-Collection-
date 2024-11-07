@@ -1,4 +1,5 @@
 "use client";
+import axios from "axios";
 import {
   Form,
   FormControl,
@@ -10,9 +11,15 @@ import { signUpSchema } from "@/schemas/signUpSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { user } from "../../../../Types/user";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
 const Page = () => {
+  const [IsSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const router = useRouter();
+  const { toast } = useToast();
+
   const form = useForm<z.infer<typeof signUpSchema>>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
@@ -22,9 +29,34 @@ const Page = () => {
     },
   });
 
-  const onsubmit = (data: user) => {
-    console.log("Data is : ", data);
-    //TODO: Make an Api for submit
+  const onsubmit = async (data: z.infer<typeof signUpSchema>) => {
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        username: data.username,
+        email: data.email,
+        password: data.email,
+      };
+      const response = await axios.post(
+        "/api/sign-up",
+        JSON.stringify(payload)
+      );
+      if (response.status >= 200 || response.status < 300) {
+        toast({
+          title: "Successfully signed up",
+          description: "User sign up successful",
+          variant: "default",
+        });
+        return router.replace(`/verify/${response.data.data.username}`);
+      }
+      return toast({
+        title: "Error ",
+        description: "Error signing up user. ",
+      });
+    } catch (error) {
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   return (
     <>
@@ -118,8 +150,9 @@ const Page = () => {
               <button
                 type="submit"
                 className="bg-[#74b9ff] border border-[#74b9ff] px-3 py-1 text-white hover:text-[#74b9ff] hover:bg-white rounded-lg duration:200"
+                disabled={IsSubmitting}
               >
-                Submit
+                {!IsSubmitting ? "Submit " : "Submiting..."}
               </button>
             </form>
           </Form>

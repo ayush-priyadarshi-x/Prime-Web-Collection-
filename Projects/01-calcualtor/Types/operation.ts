@@ -1,4 +1,4 @@
-export interface operation {
-  prompt: number;
+export default interface operation {
+  prompt: number | string;
   result: number;
 }
