@@ -3,6 +3,8 @@ import localFont from "next/font/local";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Main from "@/components/Main";
+import { Toast } from "@radix-ui/react-toast";
+import { ToastProvider } from "@/components/ui/toast";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -27,14 +29,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <Main>
-          <Navbar />
-          {children}
-        </Main>
-      </body>
+      <ToastProvider>
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        >
+          <Main>
+            <Navbar />
+            {children}
+          </Main>
+          <Toast />
+        </body>
+      </ToastProvider>
     </html>
   );
 }

@@ -1,7 +1,8 @@
 import mongoose, { Schema, model } from "mongoose";
-import user from "./../Types/user";
-import operation from "../Types/operation";
+import user from "./../Types/user"; // Assuming your user type is correctly defined
+import operation from "../Types/operation"; // Assuming your operation type is correctly defined
 
+// Define the operation schema
 const operationSchema: Schema<operation> = new Schema({
   prompt: {
     type: String,
@@ -13,6 +14,7 @@ const operationSchema: Schema<operation> = new Schema({
   },
 });
 
+// Define the user schema
 const userSchema: Schema<user> = new Schema({
   username: {
     type: String,
@@ -33,14 +35,22 @@ const userSchema: Schema<user> = new Schema({
     type: Boolean,
     default: false,
   },
-  verifyCode: { type: String, required: true },
-  verifyCodeExpiriy: { type: Date },
+  verifyCode: {
+    type: String,
+    required: true,
+  },
+  verifyCodeExpiry: {
+    type: Date,
+    required: true,
+  },
   operations: {
-    type: [operationSchema],
+    type: [operationSchema], // Reference to the operations schema
   },
 });
 
+// Create or use the existing user model
 const userModel =
   mongoose.models["nextJs-calculator"] ||
   model("nextJs-calculator", userSchema);
+
 export default userModel;

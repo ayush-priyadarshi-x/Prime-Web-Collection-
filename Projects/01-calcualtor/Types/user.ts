@@ -6,8 +6,8 @@ export default interface user extends Document {
   email: string;
   password: string;
   isVerified?: boolean;
-  verifyCode: Number;
-  verifyCodeExpiriy: Date;
+  verifyCode: string;
+  verifyCodeExpiry: Date;
   confirmPassword?: string;
   operations?: operation[];
 }

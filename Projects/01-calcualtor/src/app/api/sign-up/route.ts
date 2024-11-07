@@ -9,14 +9,23 @@ export async function POST(request: Request) {
   const data: user = await request.json();
   const { username, email, password } = data;
 
+  // Validate email format
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  if (!emailRegex.test(email)) {
+    return response(false, "Invalid email format.", 400);
+  }
+
   try {
     // Check if the user already exists
     const existingUser = await userModel.findOne({ email });
 
     if (existingUser) {
       if (existingUser.isVerified) {
-        // If the user exists and is verified, return an error response
-        return response(false, "A user with this email already exists.", 400);
+        return response(
+          false,
+          "A user with this email already exists and is verified.",
+          400
+        );
       } else {
         // Update the existing, unverified user
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -25,15 +34,26 @@ export async function POST(request: Request) {
         ).toString();
         const verifyCodeExpiry = new Date(Date.now() + 3600000); // 1 hour from now
 
+        console.log("Generated verifyCodeExpiry:", verifyCodeExpiry); // Debugging log
+
         existingUser.username = username;
         existingUser.password = hashedPassword;
         existingUser.verifyCode = verifyCode;
         existingUser.verifyCodeExpiry = verifyCodeExpiry;
 
+        // Log the user document before saving
+        console.log("User before saving:", existingUser);
+
         await existingUser.save();
+
+        // Log the user document after saving to confirm the field is saved
+        console.log("User after saving:", existingUser);
+
+        existingUser.password = undefined; // Hide password
+
         return response(
           true,
-          "User updated with verification code.",
+          "User updated with a new verification code.",
           200,
           existingUser
         );
@@ -43,20 +63,31 @@ export async function POST(request: Request) {
     // If the user does not exist, create a new user
     const hashedPassword = await bcrypt.hash(password, 10);
     const verifyCode = Math.floor(100000 + Math.random() * 900000).toString();
-    const verifyCodeExpiry = new Date(Date.now() + 3600000);
+    const verifyCodeExpiry = await new Date(Date.now() + 3600000); // 1 hour from now
+
+    console.log("Generated verifyCodeExpiry:", verifyCodeExpiry); // Debugging log
 
     const newUser = new userModel({
       username,
       email,
       password: hashedPassword,
       verifyCode,
-      verifyCodeExpiry,
+      verifyCodeExpiry: verifyCodeExpiry,
     });
 
+    // Log the new user document before saving
+    console.log("New user before saving:", newUser);
+
     await newUser.save();
+
+    // Log the new user document after saving
+    console.log("New user after saving:", newUser);
+
+    newUser.password = undefined; // Hide password
+
     return response(true, "Successfully signed up", 200, newUser);
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error during sign-up:", error);
     return response(false, "There was an error during sign-up", 500);
   }
 }

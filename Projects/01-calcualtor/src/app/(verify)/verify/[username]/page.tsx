@@ -7,19 +7,43 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import axois from "axios";
+import { useParams } from "next/navigation";
 
 const Page = () => {
+  const params = useParams<{ username: string }>();
   const [IsSubmitting, setIsSubmitting] = useState<boolean>(false);
 
+  const username = params.username;
   const form = useForm<z.infer<typeof verifyCodeSchema>>({
     resolver: zodResolver(verifyCodeSchema),
     defaultValues: {
       verifyCode: "",
     },
   });
-  const onsubmit = (data: z.infer<typeof verifyCodeSchema>) => {
+  const onsubmit = async (data: z.infer<typeof verifyCodeSchema>) => {
     setIsSubmitting(true);
+    const payload = {
+      username: decodeURIComponent(username),
+      code: data.verifyCode,
+    };
     try {
+      const response = await axois.post("/api/verify-code", payload);
+      console.log("Response : ", response);
+      if (response.status === 401) {
+        toast({
+          title: "The verification code is incorrect. ",
+          description: response.data.message,
+          variant: "destructive",
+        });
+      }
+      if (response.status === 402) {
+        toast({
+          title: "The verification code is incorrect. ",
+          description: response.data.message,
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       return toast({
         title: "There was some error ",
