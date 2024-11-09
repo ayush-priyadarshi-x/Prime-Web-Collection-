@@ -39,7 +39,7 @@ const Page = () => {
                   name="identifier"
                   render={({ field }) => (
                     <div className="flex flex-col gap-3">
-                      <FormLabel>Username // Emmail</FormLabel>
+                      <FormLabel>Username // Email</FormLabel>
                       <FormControl>
                         <input
                           className="w-full rounded-lg p-3 w-[80vw] sm:w-[60vw] md:w-[30vw]"
