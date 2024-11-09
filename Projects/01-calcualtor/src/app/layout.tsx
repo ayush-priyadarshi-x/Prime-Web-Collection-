@@ -1,11 +1,10 @@
-import type { Metadata } from "next";
+import { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Main from "@/components/Main";
 import { Toaster } from "@/components/ui/toaster";
-import { SessionProvider } from "next-auth/react";
-
+import SessionProviderWrapper from "@/components/SessionProviderWrapper";
 // Load Geist Sans font
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -34,9 +33,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      {" "}
       {/* Provides the toast context */}
-      <SessionProvider>
+      <SessionProviderWrapper>
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
@@ -47,7 +45,7 @@ export default function RootLayout({
           <Toaster />{" "}
           {/* Ensure this component is configured to display messages */}
         </body>
-      </SessionProvider>
+      </SessionProviderWrapper>
     </html>
   );
 }

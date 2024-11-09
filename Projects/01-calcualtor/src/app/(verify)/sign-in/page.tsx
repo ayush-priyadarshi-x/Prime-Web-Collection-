@@ -1,4 +1,7 @@
 "use client";
+import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
+import { useToast } from "@/hooks/use-toast";
 import {
   Form,
   FormField,
@@ -10,8 +13,13 @@ import { signInInterface, signInSchema } from "@/schemas/signInSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { useState } from "react";
 
 const Page = () => {
+  const { toast } = useToast();
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
   const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
@@ -20,8 +28,38 @@ const Page = () => {
     },
   });
 
-  const onSubmit = (data: signInInterface) => {
-    console.log("Data : ", data);
+  const onSubmit = async (data: signInInterface) => {
+    setIsSubmitting(true);
+    try {
+      const result = await signIn("credentials", {
+        redirect: false,
+        identifier: data.identifier,
+        password: data.password,
+      });
+      if (result?.error) {
+        if (result.error === "CredentialsSignin") {
+          return toast({
+            title: "Login failed",
+            description: "Incorrect email/username or password. ",
+          });
+        }
+        return toast({
+          title: "Error",
+          description: result.error,
+        });
+      }
+      toast({
+        title: "Successfully signed in. ",
+        description: "User sign in successful. ",
+      });
+      if (result?.url) {
+        router.replace("/");
+      }
+    } catch (error) {
+      console.log("Error while signing up : ", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -76,8 +114,9 @@ const Page = () => {
               <button
                 type="submit"
                 className="bg-[#74b9ff] border border-[#74b9ff] px-3 py-1 text-white hover:text-[#74b9ff] hover:bg-white rounded-lg duration:200"
+                disabled={isSubmitting}
               >
-                Submit
+                {isSubmitting ? "Submitting" : "Submit"}
               </button>
             </form>
           </Form>
