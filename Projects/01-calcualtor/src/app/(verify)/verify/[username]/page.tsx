@@ -7,13 +7,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import axois from "axios";
-import { useParams } from "next/navigation";
+import axios from "axios";
+import { useParams, useRouter } from "next/navigation";
 
 const Page = () => {
   const params = useParams<{ username: string }>();
   const [IsSubmitting, setIsSubmitting] = useState<boolean>(false);
 
+  const router = useRouter();
   const username = params.username;
   const form = useForm<z.infer<typeof verifyCodeSchema>>({
     resolver: zodResolver(verifyCodeSchema),
@@ -28,27 +29,28 @@ const Page = () => {
       code: data.verifyCode,
     };
     try {
-      const response = await axois.post("/api/verify-code", payload);
+      const response = await axios.post("/api/verify-code", payload);
       console.log("Response : ", response);
-      if (response.status === 401) {
-        toast({
-          title: "The verification code is incorrect. ",
-          description: response.data.message,
-          variant: "destructive",
-        });
-      }
-      if (response.status === 402) {
-        toast({
-          title: "The verification code is incorrect. ",
-          description: response.data.message,
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      return toast({
-        title: "There was some error ",
-        description: "Error",
+
+      toast({
+        title: "Successfully verified user. ",
+        description: response.data.message,
       });
+      router.replace("/sign-in");
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        toast({
+          title: error.response.data.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "There was some error",
+          description: "There was some error while verifying user. ",
+          variant: "destructive",
+        });
+        console.log("Error in verify code page : ", error);
+      }
     } finally {
       setIsSubmitting(false);
     }

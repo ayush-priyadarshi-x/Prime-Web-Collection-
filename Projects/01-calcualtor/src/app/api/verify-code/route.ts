@@ -6,7 +6,6 @@ export async function POST(request: Request) {
   await dbConnect();
 
   const data = await request.json();
-  console.log("Data : ", data);
   const { username, code }: { username: string; code: string } = data;
 
   try {
@@ -21,9 +20,7 @@ export async function POST(request: Request) {
 
     const isCodeValid: boolean = code == user.verifyCode;
     const isCodeNotExpired: boolean =
-      new Date(user.verifyCodeExpiry) > new Date(); // Ensure the expiry is compared as Date objects
-    console.log("User code : ", user.verifyCode);
-    console.log("verification date : ", user.verifyCodeExpiry);
+      new Date(user.verifyCodeExpiry) > new Date();
 
     if (!isCodeValid) {
       return response(false, "Verification code is not correct.", 401);
@@ -33,9 +30,9 @@ export async function POST(request: Request) {
       return response(false, "Code has expired.", 402);
     }
 
-    // Mark user as verified and save the user data asynchronously
     user.isVerified = true;
     await user.save(); // Make sure to await the save operation
+    console.log("User verification code set successfully. ");
 
     return response(true, "Successfully verified ID", 200);
   } catch (error) {
