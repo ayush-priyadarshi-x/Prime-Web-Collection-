@@ -1,5 +1,6 @@
 "use client";
 import axios from "axios";
+
 import {
   Form,
   FormControl,
@@ -37,31 +38,38 @@ const Page = () => {
         email: data.email,
         password: data.password,
       };
-      const response = await axios.post(
-        "/api/sign-up",
-        JSON.stringify(payload)
-      );
+
+      const response = await axios.post("/api/sign-up", payload); // No need to stringify
 
       if (response.status >= 200 && response.status < 300) {
         toast({
           title: "Successfully signed up",
-          description: "User sign-up successful",
+          description: response.data.message,
           variant: "default",
         });
-        return router.replace(`/verify/${response.data.data.username}`);
+        const userName = response.data.data.username;
+        return router.replace(`/verify/${userName}`);
+      } else {
+        toast({
+          title: "Error",
+          description: "Error signing up user.",
+          variant: "destructive",
+        });
       }
-
-      toast({
-        title: "Error",
-        description: "Error signing up user.",
-      });
     } catch (error) {
-      console.error("Error when signing up:", error);
-      toast({
-        title: "Sign-up Error",
-        description: "There was an error while signing up.",
-        variant: "destructive",
-      });
+      if (axios.isAxiosError(error) && error.response) {
+        toast({
+          title: error.response.data.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "There was some error",
+          description: "There was some error while verifying user. ",
+          variant: "destructive",
+        });
+        console.log("Error in verify code page : ", error);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -75,6 +83,7 @@ const Page = () => {
             onSubmit={form.handleSubmit(onSubmit)}
             className="flex flex-col gap-6"
           >
+            {/* Username field */}
             <div>
               <FormField
                 control={form.control}
@@ -96,6 +105,7 @@ const Page = () => {
               />
             </div>
 
+            {/* Email field */}
             <div>
               <FormField
                 control={form.control}
@@ -117,6 +127,7 @@ const Page = () => {
               />
             </div>
 
+            {/* Password field */}
             <div>
               <FormField
                 control={form.control}
@@ -138,6 +149,7 @@ const Page = () => {
               />
             </div>
 
+            {/* Confirm Password field */}
             <div>
               <FormField
                 control={form.control}
@@ -159,6 +171,7 @@ const Page = () => {
               />
             </div>
 
+            {/* Submit button */}
             <button
               type="submit"
               className="bg-[#74b9ff] border border-[#74b9ff] px-3 py-1 text-white hover:text-[#74b9ff] hover:bg-white rounded-lg duration-200"

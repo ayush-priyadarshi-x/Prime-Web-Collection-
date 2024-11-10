@@ -3,6 +3,7 @@ import dbConnect from "@/lib/dbConnect";
 import user from "../../../../Types/user";
 import userModel from "../../../../models/userModel";
 import bcrypt from "bcryptjs";
+import { sendVerificationEmail } from "@/helpers/sendVerificationEmail";
 
 export async function POST(request: Request) {
   await dbConnect();
@@ -46,11 +47,6 @@ export async function POST(request: Request) {
 
         await existingUser.save();
 
-        // Log the user document after saving to confirm the field is saved
-        console.log("User after saving:", existingUser);
-
-        existingUser.password = undefined; // Hide password
-
         return response(
           true,
           "User updated with a new verification code.",
@@ -80,12 +76,21 @@ export async function POST(request: Request) {
 
     await newUser.save();
 
-    // Log the new user document after saving
-    console.log("New user after saving:", newUser);
+    const emailResponse = await sendVerificationEmail(
+      email,
+      username,
+      verifyCode
+    );
 
-    newUser.password = undefined; // Hide password
-
-    return response(true, "Successfully signed up", 200, newUser);
+    if (!emailResponse.success) {
+      return response(false, "Verification email couldn't be send", 500);
+    }
+    return response(
+      true,
+      "Sign successfull and Verification email sent successfully. ",
+      200,
+      newUser
+    );
   } catch (error) {
     console.error("Error during sign-up:", error);
     return response(false, "There was an error during sign-up", 500);

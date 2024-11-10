@@ -2,10 +2,17 @@
 import Link from "next/link";
 import { useState } from "react";
 
+import { useSession, signOut } from "next-auth/react";
+
+import { User } from "next-auth";
+
 const Navbar = () => {
-  const isLogged: boolean = false;
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  const { data: session } = useSession();
+  const user: User = session?.user as User;
+
+  const isLogged: boolean = !user ? false : true;
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
@@ -45,6 +52,12 @@ const Navbar = () => {
               >
                 <li>History</li>
               </Link>
+              <button
+                className="font-bold transform hover:translate-y-[-2px] duration-200"
+                onClick={() => signOut()}
+              >
+                Sign Out
+              </button>
             </ul>
           ) : (
             <ul className="flex flex-col md:flex-row items-center justify-around gap-8">
