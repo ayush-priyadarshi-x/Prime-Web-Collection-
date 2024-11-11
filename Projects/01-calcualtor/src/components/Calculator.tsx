@@ -2,8 +2,16 @@
 
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { evaluate } from "mathjs";
+
+import { useSession } from "next-auth/react";
+
+import { User } from "next-auth";
+import axios from "axios";
 
 const Calculator = () => {
+  const { data: session } = useSession();
+  const user: User = session?.user as User;
   const buttons: string[] = "C/%/789*456-123+0.=".split("");
   const [prompt, setPrompt] = useState<string>("");
   const { toast } = useToast(); // Using the toast function from the custom hook
@@ -19,9 +27,32 @@ const Calculator = () => {
   };
 
   // Perform the operation when '=' is clicked
-  const handleOnOperate = () => {
+  const handleOnOperate = async () => {
+    const promptAnswer = evaluate(prompt).toString();
     try {
-      setPrompt(eval(prompt).toString()); // Evaluate the expression (avoid eval in production)
+      setPrompt(promptAnswer);
+      const data = {
+        email: user.email,
+        operation: { prompt: prompt, result: promptAnswer },
+      };
+      try {
+        const response = await axios.post("/api/operations", data);
+        console.log("Operations data : ", response.data);
+      } catch (error) {
+        if (axios.isAxiosError(error) && error.response) {
+          toast({
+            title: error.response.data.message,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "There was some error",
+            description: "There was some error while verifying user. ",
+            variant: "destructive",
+          });
+          console.log("Error in verify code page : ", error);
+        }
+      }
     } catch (error) {
       console.log("There was some error", error);
       toast({
@@ -41,6 +72,7 @@ const Calculator = () => {
             <input
               type="text"
               className="border border-0 focus:border-0 rounded-lg p-2 w-full"
+              readOnly
               value={prompt}
             />
           </div>

@@ -3,8 +3,10 @@ import { NextRequest } from "next/server";
 import userModel from "../../../../models/userModel";
 import mongoose from "mongoose";
 import operation from "../../../../Types/operation";
+import dbConnect from "@/lib/dbConnect";
 
 export async function GET(request: NextRequest) {
+  await dbConnect();
   const { searchParams } = request.nextUrl;
   const _id = searchParams.get("_id");
   if (_id) {
@@ -25,6 +27,7 @@ export async function GET(request: NextRequest) {
   }
 }
 export async function POST(request: Request) {
+  await dbConnect();
   try {
     const data = await request.json();
     const email = data.email;
@@ -38,7 +41,7 @@ export async function POST(request: Request) {
       return response(false, "Email is not provided.", 401);
     }
 
-    const user = await userModel.findOne({ email });
+    const user = await userModel.findOne({ email: email });
     if (!user) {
       return response(false, "User does not exist.", 402);
     }
