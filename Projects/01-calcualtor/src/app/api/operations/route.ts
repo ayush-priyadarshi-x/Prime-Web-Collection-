@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
       if (!userData.isVerified) {
         return response(false, "User is not verified. ", 400);
       }
-      return response(true, "User data retrieved. ", 200);
+      return response(true, "User data retrieved. ", 200, userData.operations);
     } catch (error) {
       response(false, "Internal server error. ", 500, error as string);
     }
