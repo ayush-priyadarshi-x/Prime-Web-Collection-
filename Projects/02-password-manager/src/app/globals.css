@@ -1,7 +1,0 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-.themeColour {
-  background-color: #74b9ff;
-}
