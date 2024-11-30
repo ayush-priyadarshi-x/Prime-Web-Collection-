@@ -1,3 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.themeClr {
+  background: linear-gradient(#7bed9f, #3498db);
+}
+.themeClrText {
+  background: linear-gradient(#7bed9f, #3498db);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent; /* Ensures text color is transparent to show the gradient */
+}
